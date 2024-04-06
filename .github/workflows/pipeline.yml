@@ -1,0 +1,34 @@
+name: Update BigCommerce on Push to Main or Dev
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  update-bigcommerce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18' 
+      - name: Install stencil CLI
+        run: npm install -g @bigcommerce/stencil-cli
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Initialize Stencil CLI and Push changes to BigCommerce
+        run: |
+          if [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+            echo -e "\n\n" | stencil init --url ${{ secrets.BIGCOMMERCE_API_URL }} --token ${{ secrets.BIGCOMMERCE_API_TOKEN }}
+          elif [[ ${{ github.ref }} == 'refs/heads/dev' ]]; then
+            echo -e "\n\n" | stencil init --url ${{ secrets.BIGCOMMERCE_API_URL2 }} --token ${{ secrets.BIGCOMMERCE_API_TOKEN2 }}
+          fi
+          echo -e "\n" | stencil push --delete -a
